@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import * as dat from 'dat.gui'
+import gal from '../img/gal.jpg'
+import galaxy from '../img/galaxy.jpg'
 
 const renderer = new THREE.WebGLRenderer()
 
@@ -49,6 +51,14 @@ scene.add(sphere)
 sphere.position.set(-10 , 10 ,0)
 sphere.castShadow = true
 
+const shpereId = sphere.id;
+
+const mousePosition = new THREE.Vector2()
+window.addEventListener('mousemove' , (e) => {
+    mousePosition.x = (e.clientX / window.innerWidth) * 2 -1
+    mousePosition.y = -(e.clientY / window.innerHeight) *2 +1
+})
+
 
 const ambientLight = new THREE.AmbientLight(0x333333)
 scene.add(ambientLight)
@@ -75,6 +85,19 @@ const sLightHelper = new THREE.SpotLightHelper(spotLight)
 scene.add(sLightHelper)
 
 scene.fog = new THREE.FogExp2(0xffffff , 0.01)
+
+const texttureLoader = new THREE.TextureLoader()
+const cubeTextureLoader = new THREE.CubeTextureLoader()
+scene.background = texttureLoader.load(galaxy)
+
+const box2Geometry = new THREE.BoxGeometry(4 , 4 , 4)
+const box2Material = new THREE.MeshBasicMaterial({
+    map : texttureLoader.load(gal)
+})
+const box2 = new THREE.Mesh(box2Geometry , box2Material)
+scene.add(box2)
+box2.position.set(0 , 15 , 10)
+
 
 const gui = new dat.GUI();
 
@@ -103,7 +126,7 @@ gui.add(options , 'penumbra' , 0 , 1);
 
 gui.add(options , 'intensity' , 0 , 1);
 
-
+const rayCaster = new THREE.Raycaster()
 
 let step = 0;
 let speed = 0.01;
@@ -117,6 +140,15 @@ function animate(time){
     spotLight.penumbra = options.penumbra
     spotLight.intensity = options.intensity
     sLightHelper.update()
+
+    rayCaster.setFromCamera(mousePosition , camera)
+    const intersects = rayCaster.intersectObjects(scene.children) 
+
+    //for(let i = 0 ; i < intersects.length ; i++){
+        //if(intersects[i].object.id = shpereId)
+            //intersects[i].object.material.color.set(0xff0000)
+    //}
+
     renderer.render(scene , camera)
 }
 
